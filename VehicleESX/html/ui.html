@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'status-bg': 'rgba(15, 23, 42, 0.85)',
+                        'accent-blue': '#60a5fa',
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        html, body {
+            background: transparent !important;
+            background-color: transparent !important;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            padding-left: 4rem;
+            pointer-events: none;
+        }
+        .glass {
+            background: linear-gradient(135deg, rgba(30, 58, 138, 0.9) 0%, rgba(15, 23, 42, 0.95) 100%);
+            border: 2px solid rgba(96, 165, 250, 0.2);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        #app {
+            opacity: 0;
+            transform: translateX(-20px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+        #app.show {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: auto;
+        }
+        body.active {
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body class="bg-transparent">
+    <div id="app" class="w-80 glass rounded-[2.5rem] shadow-2xl text-white">
+        <!-- Header -->
+        <div class="px-8 pt-8 pb-4 text-center">
+            <h1 class="text-xl font-extrabold tracking-tight mb-4">Vehicle Status</h1>
+            <div class="flex flex-col items-center justify-center">
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl">🚗</span>
+                    <span id="spawncode" class="text-xl font-bold uppercase tracking-widest text-slate-200">UNKNOWN</span>
+                </div>
+                <span id="modelhash" class="text-[10px] font-bold text-slate-500 mt-1 uppercase tracking-[0.2em]">HASH: 0x00000000</span>
+            </div>
+        </div>
+
+        <div class="px-8 pb-8 space-y-6 max-h-[60vh] overflow-y-auto scrollbar-hide">
+            <!-- Performance Section -->
+            <div id="performance-section" class="space-y-3">
+                <div class="flex items-center gap-3">
+                    <span class="text-xl">📊</span>
+                    <h2 class="text-lg font-bold text-slate-100">Performance</h2>
+                </div>
+                <ul class="space-y-2 ml-4">
+                    <li class="flex items-center gap-3 text-slate-300">
+                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                        <span class="text-sm font-medium">Max Speed (Baseline): <span id="baseline-speed" class="text-white font-semibold">0.0 MPH</span></span>
+                    </li>
+                    <li class="flex items-center gap-3 text-slate-300">
+                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                        <span class="text-sm font-medium">Max Speed (Upgraded): <span id="upgraded-speed" class="text-white font-semibold">0.0 MPH</span></span>
+                    </li>
+                    <li class="flex items-center gap-3 text-slate-300">
+                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                        <span class="text-sm font-medium">Acceleration: <span id="acceleration" class="text-white font-semibold">0.0</span></span>
+                    </li>
+                    <li class="flex items-center gap-3 text-slate-300">
+                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                        <span class="text-sm font-medium">Gears: <span id="gears" class="text-white font-semibold">0</span></span>
+                    </li>
+                    <li class="flex items-center gap-3 text-slate-300">
+                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                        <span class="text-sm font-medium">Capacity: <span id="capacity" class="text-white font-semibold">0</span></span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Upgrades Section -->
+            <div class="space-y-3">
+                <div class="flex items-center gap-3">
+                    <span class="text-xl">🔧</span>
+                    <h2 class="text-lg font-bold text-slate-100">Upgrades</h2>
+                </div>
+                <ul id="upgrade-list" class="space-y-2 ml-4">
+                    <!-- Upgrades dynamically inserted here -->
+                </ul>
+            </div>
+            
+            <!-- Report Button (Sends to both public and staff) -->
+            <div class="space-y-3 mt-4">
+                <button id="report-public-btn" class="w-full py-3 rounded-xl bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/30 transition-all duration-200 flex items-center justify-center gap-2 group">
+                    <i class="fa-brands fa-discord text-blue-400 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-sm font-bold text-blue-100">Send Report</span>
+                </button>
+            </div>
+
+            <!-- Note Input (Required) -->
+            <div class="mt-4">
+                <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">Note (Required) *</label>
+                <textarea id="report-note" rows="2" placeholder="Add a note for the report..." 
+                    class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 text-sm focus:outline-none focus:border-white/30 focus:ring-1 focus:ring-white/20 transition-colors resize-none" required></textarea>
+                <p id="note-error" class="hidden text-xs text-red-400 mt-1">Please fill out the required note before submitting.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
